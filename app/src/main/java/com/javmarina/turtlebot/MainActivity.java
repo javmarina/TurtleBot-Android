@@ -98,6 +98,8 @@ public final class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unbindService(nodeMainExecutorServiceConnection);
+        final Intent intent = new Intent(this, NodeMainExecutorService.class);
+        stopService(intent);
     }
 
     @Override
