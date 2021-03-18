@@ -30,7 +30,7 @@ public class TeleopNode implements NodeMain {
     @Override
     public void onStart(final ConnectedNode connectedNode) {
         //noinspection HardcodedFileSeparator
-        teleopPublisher = connectedNode.newPublisher("/turtle1/cmd_vel", Twist._TYPE);
+        teleopPublisher = connectedNode.newPublisher("/cmd_vel_mux/input/teleop", Twist._TYPE);
         connectedNode.executeCancellableLoop(new TeleopNode.TeleopLoop(teleopPublisher, twistProvider));
     }
 
