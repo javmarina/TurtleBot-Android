@@ -17,13 +17,24 @@ import sensor_msgs.Image;
 
 public class CameraNode implements NodeMain {
 
-    private final String topicName;
+    @Nullable
+    private ConnectedNode connectedNode;
     private final CameraNode.Callback callback;
     private Subscriber<Image> subscriber;
 
-    public CameraNode(final String topicName, final CameraNode.Callback callback) {
-        this.topicName = topicName;
+    public CameraNode(final CameraNode.Callback callback) {
         this.callback = callback;
+    }
+
+    public void setTopic(final String topicName) {
+        if (connectedNode != null) {
+            if (subscriber != null) {
+                subscriber.removeAllMessageListeners();
+                subscriber.shutdown();
+            }
+            subscriber = connectedNode.newSubscriber(topicName, Image._TYPE);
+            subscriber.addMessageListener(image -> callback.onReceived(bitmapFromImage(image)));
+        }
     }
 
     @Override
@@ -34,12 +45,12 @@ public class CameraNode implements NodeMain {
 
     @Override
     public void onStart(final ConnectedNode connectedNode) {
-        subscriber = connectedNode.newSubscriber(topicName, Image._TYPE);
-        subscriber.addMessageListener(image -> callback.onReceived(bitmapFromImage(image)));
+        this.connectedNode = connectedNode;
     }
 
     @Override
     public void onShutdown(final Node node) {
+        connectedNode = null;
         // TODO: check this
         subscriber.removeAllMessageListeners();
         subscriber.shutdown();

@@ -11,12 +11,17 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.javmarina.turtlebot.node.CameraNode;
 import com.javmarina.turtlebot.node.TeleopNode;
@@ -42,6 +47,8 @@ public final class MainActivity extends AppCompatActivity {
 
     private ServiceConnection nodeMainExecutorServiceConnection;
     private NodeMainExecutorService nodeMainExecutorService;
+
+    private CameraNode cameraNode;
 
     //private TextView odometryTextView;
     private CustomSeekBar seekBarLinear;
@@ -69,6 +76,49 @@ public final class MainActivity extends AppCompatActivity {
                         Locale.US, "%.2f", seekBarAngular.getNormalizedProgress())));
 
         imageView = findViewById(R.id.imageView);
+
+        // TODO:  * /camera/depth/points [sensor_msgs/PointCloud2]
+        // * /camera/ir/camera_info [sensor_msgs/CameraInfo]
+
+        //noinspection HardcodedFileSeparator
+        final String[] arraySpinner = {
+                "/camera/depth/image",
+                "/camera/depth/image_raw",
+                "/camera/depth_registered/hw_registered/image_rect",
+                "/camera/depth_registered/image",
+                "/camera/depth_registered/image_raw",
+                "/camera/depth_registered/hw_registered/image_rect_raw",
+                "/camera/ir/image",
+                "/camera/depth/image_rect_raw",
+                "/camera/depth/image_rect",
+                "/camera/rgb/image_rect_color",
+                "/camera/rgb/image_raw"
+        };
+        final Spinner spinner = findViewById(R.id.spinner);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                R.layout.support_simple_spinner_dropdown_item, arraySpinner);
+        adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(final AdapterView<?> adapterView, final View view,
+                                       final int i, final long l) {
+                imageView.setImageBitmap(null);
+                if (cameraNode != null) {
+                    final String topicName = arraySpinner[i];
+                    cameraNode.setTopic(topicName);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(final AdapterView<?> adapterView) {
+                imageView.setImageBitmap(null);
+                if (cameraNode != null) {
+                    final String topicName = arraySpinner[0];
+                    cameraNode.setTopic(topicName);
+                }
+            }
+        });
 
         nodeMainExecutorServiceConnection = new NodeMainExecutorServiceConnection(null);
     }
@@ -147,9 +197,13 @@ public final class MainActivity extends AppCompatActivity {
             emptyTwist.getLinear().setX(linear * 0.5);
             return emptyTwist;
         });
-        //noinspection HardcodedFileSeparator
-        final NodeMain cameraNode = new CameraNode("camera/image", bitmap ->
-                imageView.post(() -> imageView.setImageBitmap(bitmap)));
+        cameraNode = new CameraNode(bitmap -> {
+            if (bitmap == null) {
+                imageView.post(() -> imageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_error)));
+            } else {
+                imageView.post(() -> imageView.setImageBitmap(bitmap));
+            }
+        });
 
         // Network configuration with ROS master
         //final String hostname = nodeMainExecutorService.getRosHostname();
