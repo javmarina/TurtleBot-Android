@@ -1,5 +1,11 @@
 package com.javmarina.turtlebot.node;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+
+import androidx.annotation.Nullable;
+
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
@@ -29,7 +35,7 @@ public class CameraNode implements NodeMain {
     @Override
     public void onStart(final ConnectedNode connectedNode) {
         subscriber = connectedNode.newSubscriber(topicName, Image._TYPE);
-        subscriber.addMessageListener(callback::onReceived);
+        subscriber.addMessageListener(image -> callback.onReceived(bitmapFromImage(image)));
     }
 
     @Override
@@ -48,6 +54,30 @@ public class CameraNode implements NodeMain {
     }
 
     public interface Callback {
-        void onReceived(final Image image);
+        void onReceived(final Bitmap bitmap);
+    }
+
+    @Nullable
+    public static Bitmap bitmapFromImage(final Image message) {
+        if (!"rgb8".equals(message.getEncoding())) {
+            return null;
+        }
+        final int width = message.getWidth();
+        final int height = message.getHeight();
+        final Bitmap bitmap = Bitmap.createBitmap(
+                width,
+                height,
+                Bitmap.Config.ARGB_8888
+        );
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                final ChannelBuffer data = message.getData();
+                final byte red = data.getByte((int) (y * message.getStep() + 3 * x));
+                final byte green = data.getByte((int) (y * message.getStep() + 3 * x + 1));
+                final byte blue = data.getByte((int) (y * message.getStep() + 3 * x + 2));
+                bitmap.setPixel(x, y, Color.argb(255, red & 0xFF, green & 0xFF, blue & 0xFF));
+            }
+        }
+        return bitmap;
     }
 }

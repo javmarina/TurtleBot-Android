@@ -4,8 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -23,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.javmarina.turtlebot.node.CameraNode;
 import com.javmarina.turtlebot.node.TeleopNode;
 
-import org.jboss.netty.buffer.ChannelBuffer;
 import org.ros.address.InetAddressFactory;
 import org.ros.android.MasterChooser;
 import org.ros.android.NodeMainExecutorService;
@@ -151,15 +148,8 @@ public final class MainActivity extends AppCompatActivity {
             return emptyTwist;
         });
         //noinspection HardcodedFileSeparator
-        final NodeMain cameraNode = new CameraNode("camera/image", image -> {
-            final ChannelBuffer buffer = image.getData();
-            final Bitmap bitmap = BitmapFactory.decodeByteArray(
-                    buffer.array(),
-                    buffer.arrayOffset(),
-                    buffer.readableBytes()
-            );
-            imageView.post(() -> imageView.setImageBitmap(bitmap));
-        });
+        final NodeMain cameraNode = new CameraNode("camera/image", bitmap ->
+                imageView.post(() -> imageView.setImageBitmap(bitmap)));
 
         // Network configuration with ROS master
         //final String hostname = nodeMainExecutorService.getRosHostname();
