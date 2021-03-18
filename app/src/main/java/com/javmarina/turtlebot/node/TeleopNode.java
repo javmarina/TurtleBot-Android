@@ -55,7 +55,6 @@ public class TeleopNode implements NodeMain {
 
         private final Publisher<Twist> twistPublisher;
         private final TeleopNode.TwistProvider twistProvider;
-        private final Rate rate = new WallTimeRate(10); // TODO
 
         TeleopLoop(final Publisher<Twist> twistPublisher,
                    final TeleopNode.TwistProvider twistProvider) {
@@ -67,7 +66,6 @@ public class TeleopNode implements NodeMain {
         protected void loop() {
             final Twist twist = twistProvider.getTwist(twistPublisher.newMessage());
             twistPublisher.publish(twist);
-            rate.sleep();
         }
     }
 }
