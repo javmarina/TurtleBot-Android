@@ -83,9 +83,9 @@ public class CameraNode implements NodeMain {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 final ChannelBuffer data = message.getData();
-                final byte red = data.getByte((int) (y * message.getStep() + 3 * x));
-                final byte green = data.getByte((int) (y * message.getStep() + 3 * x + 1));
-                final byte blue = data.getByte((int) (y * message.getStep() + 3 * x + 2));
+                final byte red = data.getByte(y * message.getStep() + 3 * x);
+                final byte green = data.getByte(y * message.getStep() + 3 * x + 1);
+                final byte blue = data.getByte(y * message.getStep() + 3 * x + 2);
                 bitmap.setPixel(x, y, Color.argb(255, red & 0xFF, green & 0xFF, blue & 0xFF));
             }
         }
