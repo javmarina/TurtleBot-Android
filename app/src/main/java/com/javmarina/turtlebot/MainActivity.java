@@ -54,6 +54,7 @@ public final class MainActivity extends AppCompatActivity {
     private CustomSeekBar seekBarLinear;
     private CustomSeekBar seekBarAngular;
     private ImageView imageView;
+    private Spinner spinner;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -94,7 +95,7 @@ public final class MainActivity extends AppCompatActivity {
                 "/camera/rgb/image_rect_color",
                 "/camera/rgb/image_raw"
         };
-        final Spinner spinner = findViewById(R.id.spinner);
+        spinner = findViewById(R.id.spinner);
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 R.layout.support_simple_spinner_dropdown_item, arraySpinner);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
@@ -119,6 +120,7 @@ public final class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        spinner.setSelection(10);
 
         nodeMainExecutorServiceConnection = new NodeMainExecutorServiceConnection(null);
     }
@@ -215,6 +217,7 @@ public final class MainActivity extends AppCompatActivity {
         // Run nodes
         nodeMainExecutor.execute(teleopNode, nodeConfiguration);
         nodeMainExecutor.execute(cameraNode, nodeConfiguration);
+        cameraNode.setTopic((String) spinner.getSelectedItem());
     }
 
     @Override
