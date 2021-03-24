@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import com.javmarina.turtlebot.cv_bridge.CvImage;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.ros.namespace.GraphName;
@@ -84,9 +85,23 @@ public class CameraNode implements NodeMain {
         // 2. Mat -> 8UCx Mat
         final Mat mat2;
         final int type = mat.type();
-        if (CvType.depth(type) > 0) {
+        if (CvType.depth(type) == CvType.CV_16U) {
+            // 16-bit unsigned
+            // Assume that data is 12 bits (4 MSB are 0)
+            // Divide by 16 (>> 4) so we can safely convert to 8 bit
             mat2 = new Mat();
-            mat.convertTo(mat2, CvType.CV_8UC(CvType.channels(type)), 1/16.0); // assumes 12 significant bits
+            mat.convertTo(mat2, CvType.CV_8UC(CvType.channels(type)), 1/16.0);
+        } else if (CvType.depth(type) == CvType.CV_32F) {
+            // Floats
+            // Normalize to range 0-255
+            final Core.MinMaxLocResult result = Core.minMaxLoc(mat);
+            final double min = result.minVal;
+            final double max = result.maxVal;
+
+            mat2 = new Mat();
+            final double alpha = 255.0 / (max - min);
+            final double beta = -255.0 * min / (max - min);
+            mat.convertTo(mat2, CvType.CV_8UC(CvType.channels(type)), alpha, beta);
         } else {
             mat2 = mat;
         }
