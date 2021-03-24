@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import com.javmarina.turtlebot.node.CameraNode;
 import com.javmarina.turtlebot.node.TeleopNode;
 
+import org.opencv.android.OpenCVLoader;
 import org.ros.address.InetAddressFactory;
 import org.ros.android.MasterChooser;
 import org.ros.android.NodeMainExecutorService;
@@ -61,6 +62,11 @@ public final class MainActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (!OpenCVLoader.initDebug()) {
+            Toast.makeText(this, "Unable to load OpenCV", Toast.LENGTH_LONG).show();
+            finish();
+        }
 
         //odometryTextView = findViewById(R.id.odometry);
         final TextView textViewLinear = findViewById(R.id.linear_text);

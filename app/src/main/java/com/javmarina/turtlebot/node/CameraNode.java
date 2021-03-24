@@ -1,11 +1,14 @@
 package com.javmarina.turtlebot.node;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 
 import androidx.annotation.Nullable;
 
-import org.jboss.netty.buffer.ChannelBuffer;
+import com.javmarina.turtlebot.cv_bridge.CvImage;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
@@ -70,9 +73,25 @@ public class CameraNode implements NodeMain {
 
     @Nullable
     public static Bitmap bitmapFromImage(final Image message) {
-        if (!"rgb8".equals(message.getEncoding())) {
+        // 1. Image -> Mat
+        final Mat mat;
+        try {
+            mat = CvImage.toCvCopy(message).image;
+        } catch (final Exception e) {
             return null;
         }
+
+        // 2. Mat -> 8UCx Mat
+        final Mat mat2;
+        final int type = mat.type();
+        if (CvType.depth(type) > 0) {
+            mat2 = new Mat();
+            mat.convertTo(mat2, CvType.CV_8UC(CvType.channels(type)), 1/16.0); // assumes 12 significant bits
+        } else {
+            mat2 = mat;
+        }
+
+        // 3. 8UC3 Mat -> Bitmap
         final int width = message.getWidth();
         final int height = message.getHeight();
         final Bitmap bitmap = Bitmap.createBitmap(
@@ -80,15 +99,8 @@ public class CameraNode implements NodeMain {
                 height,
                 Bitmap.Config.ARGB_8888
         );
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                final ChannelBuffer data = message.getData();
-                final byte red = data.getByte(y * message.getStep() + 3 * x);
-                final byte green = data.getByte(y * message.getStep() + 3 * x + 1);
-                final byte blue = data.getByte(y * message.getStep() + 3 * x + 2);
-                bitmap.setPixel(x, y, Color.argb(255, red & 0xFF, green & 0xFF, blue & 0xFF));
-            }
-        }
+        Utils.matToBitmap(mat2, bitmap);
+
         return bitmap;
     }
 }
