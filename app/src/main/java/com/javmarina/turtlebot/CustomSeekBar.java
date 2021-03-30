@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 
 public class CustomSeekBar extends AppCompatSeekBar {
 
-    private static final int THUMB_SIZE = 56;
+    private static final int THUMB_SIZE = 64;
     private static final int THRESHOLD = 16;
     private static final int ANIM_DURATION = 100;
 
