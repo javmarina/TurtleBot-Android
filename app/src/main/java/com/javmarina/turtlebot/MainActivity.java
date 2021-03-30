@@ -201,8 +201,8 @@ public final class MainActivity extends AppCompatActivity {
         final NodeMain teleopNode = new TeleopNode(emptyTwist -> {
             final double linear = seekBarLinear.getNormalizedProgress();
             final double angular = seekBarAngular.getNormalizedProgress();
-            emptyTwist.getAngular().setZ(angular * 1.0);
-            emptyTwist.getLinear().setX(linear * 0.3);
+            emptyTwist.getAngular().setZ(angular * 1.4);
+            emptyTwist.getLinear().setX(linear * 0.4);
             return emptyTwist;
         });
         cameraNode = new CameraNode(bitmap -> {
