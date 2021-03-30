@@ -57,6 +57,8 @@ public class CustomSeekBar extends AppCompatSeekBar {
 
     private static final class CustomOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
 
+        private static final float DECELERATE_FACTOR = 1.5f;
+
         private final CustomSeekBar.Callback callback;
 
         private CustomOnSeekBarChangeListener(final CustomSeekBar.Callback callback) {
@@ -81,7 +83,7 @@ public class CustomSeekBar extends AppCompatSeekBar {
         public void onStopTrackingTouch(final SeekBar seekBar) {
             final ValueAnimator anim = ValueAnimator.ofInt(seekBar.getProgress(), 0);
             anim.setDuration(ANIM_DURATION);
-            anim.setInterpolator(new DecelerateInterpolator(1.5f));
+            anim.setInterpolator(new DecelerateInterpolator(DECELERATE_FACTOR));
             anim.addUpdateListener(animation -> {
                 final int val = (int) animation.getAnimatedValue();
                 seekBar.setProgress(val);
