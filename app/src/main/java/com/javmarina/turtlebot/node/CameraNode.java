@@ -1,6 +1,7 @@
 package com.javmarina.turtlebot.node;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
@@ -25,20 +26,26 @@ public class CameraNode implements NodeMain {
     private ConnectedNode connectedNode;
     private final CameraNode.Callback callback;
     private Subscriber<Image> subscriber;
+    private String topicName;
 
     public CameraNode(final CameraNode.Callback callback) {
         this.callback = callback;
     }
 
     public void setTopic(final String topicName) {
+        this.topicName = topicName;
         if (connectedNode != null) {
-            if (subscriber != null) {
-                subscriber.removeAllMessageListeners();
-                subscriber.shutdown();
-            }
-            subscriber = connectedNode.newSubscriber(topicName, Image._TYPE);
-            subscriber.addMessageListener(image -> callback.onReceived(bitmapFromImage(image)));
+            subscribe(topicName);
         }
+    }
+
+    private void subscribe(final String topicName) {
+        if (subscriber != null) {
+            subscriber.removeAllMessageListeners();
+            subscriber.shutdown();
+        }
+        subscriber = connectedNode.newSubscriber(topicName, Image._TYPE);
+        subscriber.addMessageListener(image -> callback.onReceived(bitmapFromImage(image)));
     }
 
     @Override
@@ -50,6 +57,9 @@ public class CameraNode implements NodeMain {
     @Override
     public void onStart(final ConnectedNode connectedNode) {
         this.connectedNode = connectedNode;
+        if (!TextUtils.isEmpty(topicName)) {
+            subscribe(topicName);
+        }
     }
 
     @Override
