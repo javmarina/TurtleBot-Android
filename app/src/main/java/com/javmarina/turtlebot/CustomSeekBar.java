@@ -33,9 +33,8 @@ public class CustomSeekBar extends AppCompatSeekBar {
     }
 
     public void init(final CustomSeekBar.Callback callback) {
-        setMax(RESOLUTION);
-        setMin(-RESOLUTION);
-        setProgress(0);
+        setMax(2*RESOLUTION);
+        setProgress(RESOLUTION);
 
         final ShapeDrawable th = new ShapeDrawable(new OvalShape());
         th.setIntrinsicWidth(THUMB_SIZE);
@@ -48,7 +47,7 @@ public class CustomSeekBar extends AppCompatSeekBar {
     }
 
     public double getNormalizedProgress() {
-        return getProgress() / (double) RESOLUTION;
+        return (getProgress() - RESOLUTION) / (double) RESOLUTION;
     }
 
     public interface Callback {
@@ -67,11 +66,11 @@ public class CustomSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-            if (Math.abs(progress) < THRESHOLD) {
-                seekBar.setProgress(0);
+            if (Math.abs(progress-RESOLUTION) < THRESHOLD) {
+                seekBar.setProgress(RESOLUTION);
                 callback.onChange(0.0);
             } else {
-                callback.onChange(progress / (double) RESOLUTION);
+                callback.onChange((progress - RESOLUTION) / (double) RESOLUTION);
             }
         }
 
@@ -81,13 +80,13 @@ public class CustomSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onStopTrackingTouch(final SeekBar seekBar) {
-            final ValueAnimator anim = ValueAnimator.ofInt(seekBar.getProgress(), 0);
+            final ValueAnimator anim = ValueAnimator.ofInt(seekBar.getProgress(), RESOLUTION);
             anim.setDuration(ANIM_DURATION);
             anim.setInterpolator(new DecelerateInterpolator(DECELERATE_FACTOR));
             anim.addUpdateListener(animation -> {
                 final int val = (int) animation.getAnimatedValue();
                 seekBar.setProgress(val);
-                callback.onChange(val / (double) RESOLUTION);
+                callback.onChange((val - RESOLUTION) / (double) RESOLUTION);
             });
             anim.start();
         }
