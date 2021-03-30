@@ -74,13 +74,11 @@ public final class MainActivity extends AppCompatActivity {
 
         seekBarLinear = findViewById(R.id.linear);
         seekBarLinear.init(progress ->
-                textViewLinear.setText(String.format(
-                        Locale.US, "%.2f", seekBarLinear.getNormalizedProgress())));
+                textViewLinear.setText(String.format(Locale.US, "%.2f", progress)));
 
         seekBarAngular = findViewById(R.id.angular);
         seekBarAngular.init(progress ->
-                textViewAngular.setText(String.format(
-                        Locale.US, "%.2f", seekBarAngular.getNormalizedProgress())));
+                textViewAngular.setText(String.format(Locale.US, "%.2f", progress)));
 
         imageView = findViewById(R.id.imageView);
 

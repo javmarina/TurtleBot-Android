@@ -18,6 +18,7 @@ public class CustomSeekBar extends AppCompatSeekBar {
     private static final int THUMB_SIZE = 64;
     private static final int THRESHOLD = 16;
     private static final int ANIM_DURATION = 100;
+    private static final int RESOLUTION = 100;
 
     public CustomSeekBar(final Context context) {
         super(context);
@@ -32,8 +33,9 @@ public class CustomSeekBar extends AppCompatSeekBar {
     }
 
     public void init(final CustomSeekBar.Callback callback) {
-        setMax(255);
-        setProgress(128);
+        setMax(RESOLUTION);
+        setMin(-RESOLUTION);
+        setProgress(0);
 
         final ShapeDrawable th = new ShapeDrawable(new OvalShape());
         th.setIntrinsicWidth(THUMB_SIZE);
@@ -42,15 +44,15 @@ public class CustomSeekBar extends AppCompatSeekBar {
         setThumb(th);
 
         setOnSeekBarChangeListener(new CustomSeekBar.CustomOnSeekBarChangeListener(callback));
-        callback.onChange(128);
+        callback.onChange(0.0);
     }
 
     public double getNormalizedProgress() {
-        return (getProgress() - 128.0) / 128.0;
+        return getProgress() / (double) RESOLUTION;
     }
 
     public interface Callback {
-        void onChange(final int progress);
+        void onChange(final double progress);
     }
 
     private static final class CustomOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
@@ -63,11 +65,11 @@ public class CustomSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-            if (Math.abs(progress - 128) < THRESHOLD) {
-                seekBar.setProgress(128);
-                callback.onChange(128);
+            if (Math.abs(progress) < THRESHOLD) {
+                seekBar.setProgress(0);
+                callback.onChange(0.0);
             } else {
-                callback.onChange(progress);
+                callback.onChange(progress / (double) RESOLUTION);
             }
         }
 
@@ -77,13 +79,13 @@ public class CustomSeekBar extends AppCompatSeekBar {
 
         @Override
         public void onStopTrackingTouch(final SeekBar seekBar) {
-            final ValueAnimator anim = ValueAnimator.ofInt(seekBar.getProgress(), 128);
+            final ValueAnimator anim = ValueAnimator.ofInt(seekBar.getProgress(), 0);
             anim.setDuration(ANIM_DURATION);
             anim.setInterpolator(new DecelerateInterpolator(1.5f));
             anim.addUpdateListener(animation -> {
                 final int val = (int) animation.getAnimatedValue();
                 seekBar.setProgress(val);
-                callback.onChange(val);
+                callback.onChange(val / (double) RESOLUTION);
             });
             anim.start();
         }
