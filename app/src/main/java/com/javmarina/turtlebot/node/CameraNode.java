@@ -94,6 +94,7 @@ public class CameraNode implements NodeMain {
         } else if (CvType.depth(type) == CvType.CV_32F) {
             // Floats
             // Normalize to range 0-255
+            Core.patchNaNs(mat, 0.0);
             final Core.MinMaxLocResult result = Core.minMaxLoc(mat);
             final double min = result.minVal;
             final double max = result.maxVal;
